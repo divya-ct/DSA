@@ -1,0 +1,242 @@
+#include <iostream> 
+using namespace std; 
+class Node { 
+string word; 
+string meaning; 
+Node *left; 
+Node *right; 
+public: 
+Node() { 
+word = ""; 
+meaning = ""; 
+left = NULL; 
+right = NULL; 
+} 
+Node(string word, string meaning) { 
+this->word = word; 
+this->meaning = meaning; 
+left = NULL; 
+right = NULL; 
+} 
+friend class Dictionary; 
+}; 
+class Dictionary { 
+Node *root; 
+public: 
+Dictionary() { 
+root = NULL; 
+} 
+~Dictionary() { 
+destroyTree(root); 
+} 
+void destroyTree(Node* node) { 
+if (node != NULL) { 
+destroyTree(node->left); 
+destroyTree(node->right); 
+delete node; 
+} 
+} 
+void insert() { 
+Node *new_node = new Node(); 
+cout << "Enter new Word: "; 
+cin >> new_node->word; 
+cout << "Enter meaning: "; 
+cin.ignore(); 
+getline(cin, new_node->meaning); 
+if (root == NULL) { 
+root = new_node; 
+cout << "Word Added to Dictionary!" << endl; 
+return; 
+} 
+Node *current = root; 
+Node *parent = NULL; 
+while (current != NULL) { 
+parent = current; 
+if (current->word > new_node->word) { 
+current = current->left; 
+} else { 
+current = current->right; 
+} 
+} 
+if (parent->word > new_node->word) { 
+parent->left = new_node; 
+cout << "Word added to left of " << parent->word << endl; 
+} else { 
+parent->right = new_node; 
+cout << "Word added to right of " << parent->word << endl; 
+} 
+} 
+void inorder(Node *temp) { 
+if (temp == NULL) { 
+return; 
+} 
+inorder(temp->left); 
+cout << temp->word << " = " << temp->meaning << endl; 
+inorder(temp->right); 
+} 
+void inorder() { 
+inorder(root); 
+} 
+void postorder(Node *temp) { 
+if (temp == NULL) { 
+return; 
+} 
+postorder(temp->left); 
+postorder(temp->right); 
+cout << temp->word << " = " << temp->meaning << endl; 
+} 
+void postorder() { 
+postorder(root); 
+} 
+int search(string key) { 
+int count = 0; 
+Node *current = root; 
+while (current != NULL) { 
+if (current->word == key) { 
+count++; 
+cout << current->word << " = " << current->meaning << endl; 
+} 
+if (current->word > key) { 
+current = current->left; 
+} else { 
+current = current->right; 
+} 
+} 
+return count; 
+} 
+void update(string key) { 
+Node *current = root; 
+string meaning; 
+while (current != NULL) { 
+if (current->word == key) { 
+cout << current->word << " = " << current->meaning << endl; 
+cout << "Enter new meaning: " << endl; 
+cin.ignore(); 
+getline(cin, meaning); 
+current->meaning = meaning; 
+return; 
+} 
+if (current->word > key) { 
+current = current->left; 
+} else { 
+current = current->right; 
+} 
+} 
+cout << "Word not found in dictionary." << endl; 
+} 
+void deleteNode(string key) { 
+Node *current = root; 
+Node *parent = NULL; 
+while (current != NULL && current->word != key) { 
+parent = current; 
+if (current->word > key) { 
+current = current->left; 
+} else { 
+current = current->right; 
+} 
+} 
+if (current == NULL) { 
+cout << "Word is not present in the dictionary!!" << endl; 
+return; 
+} 
+if (current->left == NULL && current->right == NULL) { 
+if (parent == NULL) { 
+root = NULL; 
+} else if (parent->left == current) { 
+parent->left = NULL; 
+} else { 
+parent->right = NULL; 
+} 
+delete current; 
+} 
+else if (current->left == NULL || current->right == NULL) { 
+Node *child = (current->left != NULL) ? current->left : current->right; 
+if (parent == NULL) { 
+root = child; 
+} else if (parent->left == current) { 
+parent->left = child; 
+} else { 
+parent->right = child; 
+} 
+delete current; 
+} 
+else { 
+Node *temp = current->right; 
+Node *tempParent = NULL; 
+while (temp->left != NULL) { 
+tempParent = temp; 
+temp = temp->left; 
+} 
+current->word = temp->word; 
+current->meaning = temp->meaning; 
+if (tempParent != NULL) { 
+tempParent->left = temp->right; 
+} else { 
+current->right = temp->right; 
+} 
+delete temp; 
+} 
+} 
+}; 
+int main() { 
+Dictionary *dict = new Dictionary(); 
+cout << "--------------" << endl; 
+cout << " Dictionary" << endl; 
+cout << "--------------" << endl; 
+cout << "1. View Words" << endl; 
+cout << "2. Add Words" << endl; 
+cout << "3. Search Word" << endl; 
+cout << "4. Update Word" << endl; 
+cout << "5. Delete Word" << endl; 
+cout << "6. Exit" << endl; 
+int ch = 0; 
+cout << "\nEnter Your choice: "; 
+cin >> ch; 
+string key; 
+int flag = true; 
+while (flag) { 
+switch (ch) { 
+case 1: 
+cout << "1. Ascending Order\n2. Descending Order" << endl; 
+cin >> ch; 
+if (ch == 1) { 
+dict->inorder(); 
+} else if (ch == 2) { 
+dict->postorder(); 
+} else { 
+cout << "Invalid Input" << endl; 
+} 
+break; 
+case 2: 
+dict->insert(); 
+break; 
+case 3: 
+cout << "Enter key to search: " << endl; 
+cin >> key; 
+cout << dict->search(key) << " Entries found!" << endl; 
+break; 
+case 4: 
+cout << "Enter key to update: " << endl; 
+cin >> key; 
+dict->update(key); 
+break; 
+case 5: 
+cout << "Enter key to delete: " << endl; 
+cin >> key; 
+dict->deleteNode(key); 
+break; 
+case 6: 
+cout << "EXIT" << endl; 
+flag = false; 
+break; 
+default: 
+cout << "Invalid Input" << endl; 
+} 
+if (flag) { 
+cout << "\nEnter Your choice: "; 
+cin >> ch; 
+} 
+} 
+delete dict; 
+return 0; 
+} 
